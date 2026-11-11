@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#171c19" />
+    <meta name="description" content="Cancionero offline para músicos con acordes, repertorios y autoscroll." />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <title>Mi Cancionero</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">♪</div>
+          <div>
+            <strong>Mi Cancionero</strong>
+            <span id="connectionLabel">Comprobando conexión…</span>
+          </div>
+        </div>
+
+        <button class="primary full" id="newSongButton" type="button">
+          <span aria-hidden="true">＋</span> Nueva canción
+        </button>
+
+        <nav class="nav-list" aria-label="Biblioteca">
+          <button class="nav-item active" data-folder="all" type="button">
+            <span>Biblioteca</span><b id="songCount">0</b>
+          </button>
+          <button class="nav-item" data-folder="favorites" type="button">
+            <span>Favoritas</span><b id="favoriteCount">0</b>
+          </button>
+        </nav>
+
+        <div class="sidebar-heading">
+          <span>Repertorios</span>
+          <button id="newRepertoireButton" class="icon-button small" type="button" title="Nuevo repertorio" aria-label="Nuevo repertorio">＋</button>
+        </div>
+        <nav class="nav-list" id="repertoireList" aria-label="Repertorios"></nav>
+
+        <div class="sidebar-footer">
+          <button class="quiet full" id="exportButton" type="button">Exportar respaldo</button>
+          <label class="quiet full file-button">
+            Importar respaldo
+            <input id="importInput" type="file" accept="application/json,.json" />
+          </label>
+        </div>
+      </aside>
+
+      <main class="main-view">
+        <header class="topbar">
+          <button id="menuButton" class="icon-button menu-button" type="button" aria-label="Abrir menú">☰</button>
+          <div class="search-wrap">
+            <span aria-hidden="true">⌕</span>
+            <input id="searchInput" type="search" placeholder="Buscar título, artista, acorde o letra…" autocomplete="off" />
+          </div>
+          <button id="installButton" class="quiet install-button" type="button" hidden>Instalar app</button>
+          <button id="webSearchButton" class="quiet web-search-button" type="button">Buscar en web</button>
+        </header>
+
+        <section class="library" aria-labelledby="libraryTitle">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow" id="libraryEyebrow">TU MÚSICA, SIEMPRE CONTIGO</p>
+              <h1 id="libraryTitle">Biblioteca</h1>
+              <p id="librarySummary">Tus canciones se guardan solamente en este dispositivo.</p>
+            </div>
+            <div class="view-switch" aria-label="Tipo de vista">
+              <button class="active" data-view="grid" type="button" aria-label="Vista de tarjetas">▦</button>
+              <button data-view="list" type="button" aria-label="Vista de lista">☷</button>
+            </div>
+          </div>
+
+          <div id="songGrid" class="song-grid" aria-live="polite"></div>
+
+          <div id="emptyState" class="empty-state" hidden>
+            <div class="empty-icon" aria-hidden="true">♬</div>
+            <h2>Aquí empieza tu repertorio</h2>
+            <p>Escribe una canción o pega una letra con acordes. Los espacios y saltos de línea se conservarán.</p>
+            <button class="primary" id="emptyNewSongButton" type="button">Crear mi primera canción</button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog id="songEditor" class="editor-dialog">
+      <form id="songForm" method="dialog">
+        <header class="dialog-header">
+          <div>
+            <p class="eyebrow">EDITOR</p>
+            <h2 id="editorTitle">Nueva canción</h2>
+          </div>
+          <button class="icon-button" id="closeEditorButton" type="button" aria-label="Cerrar">×</button>
+        </header>
+
+        <div class="editor-fields">
+          <label>Título <input id="titleInput" name="title" required maxlength="120" placeholder="Nombre de la canción" /></label>
+          <label>Artista <input id="artistInput" name="artist" maxlength="120" placeholder="Artista o compositor" /></label>
+          <label>Repertorio / carpeta
+            <input id="repertoireInput" name="repertoire" list="repertoireOptions" maxlength="120" placeholder="Ej. Grupo / Serenata" />
+            <datalist id="repertoireOptions"></datalist>
+          </label>
+          <label>Duración
+            <div class="duration-inputs">
+              <input id="minutesInput" type="number" min="0" max="59" value="3" inputmode="numeric" aria-label="Minutos" />
+              <span>:</span>
+              <input id="secondsInput" type="number" min="0" max="59" value="0" inputmode="numeric" aria-label="Segundos" />
+            </div>
+          </label>
+        </div>
+
+        <div class="editor-toolbar">
+          <span>Letra y acordes</span>
+          <div>
+            <button class="chip" type="button" data-insert="[C]">C</button>
+            <button class="chip" type="button" data-insert="[G]">G</button>
+            <button class="chip" type="button" data-insert="[Am]">Am</button>
+            <button class="chip" type="button" data-insert="[F]">F</button>
+          </div>
+        </div>
+        <textarea id="lyricsInput" name="lyrics" spellcheck="false" placeholder="Pega o escribe aquí. La app conservará los espacios y los acordes tal como los acomodes.
+
+Ejemplo:
+C              G
+Primera línea de la canción"></textarea>
+        <p class="editor-note">Consejo: revisa la vista de interpretación después de pegar; algunas páginas no copian correctamente sus columnas.</p>
+
+        <footer class="dialog-actions">
+          <button id="deleteSongButton" class="danger" type="button" hidden>Eliminar</button>
+          <span class="action-spacer"></span>
+          <button id="cancelEditorButton" class="quiet" type="button">Cancelar</button>
+          <button class="primary" type="submit">Guardar offline</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <dialog id="performanceDialog" class="performance-dialog">
+      <div class="performance-shell">
+        <header class="performance-header">
+          <button id="closePerformanceButton" class="icon-button light" type="button" aria-label="Cerrar interpretación">×</button>
+          <div>
+            <h2 id="performanceTitle"></h2>
+            <p id="performanceArtist"></p>
+          </div>
+          <button id="favoriteButton" class="icon-button light" type="button" aria-label="Marcar favorita">☆</button>
+        </header>
+
+        <div id="countdown" class="countdown" hidden>3</div>
+        <div id="lyricsScroller" class="lyrics-scroller" tabindex="0">
+          <pre id="performanceLyrics"></pre>
+          <div class="end-space" aria-hidden="true"></div>
+        </div>
+
+        <footer class="player-controls">
+          <button id="editFromPlayerButton" class="icon-button light" type="button" aria-label="Editar canción">✎</button>
+          <button id="rewindButton" class="icon-button light" type="button" aria-label="Volver al inicio">↺</button>
+          <button id="playButton" class="play-button" type="button" aria-label="Iniciar autoscroll">▶</button>
+          <label class="speed-control">Velocidad
+            <input id="speedInput" type="range" min="0.5" max="1.75" value="1" step="0.05" />
+            <output id="speedOutput">1×</output>
+          </label>
+          <span id="timeRemaining" class="time-remaining">3:00</span>
+        </footer>
+      </div>
+    </dialog>
+
+    <dialog id="repertoireDialog" class="small-dialog">
+      <form id="repertoireForm" method="dialog">
+        <h2>Nuevo repertorio</h2>
+        <p>Puedes crear niveles usando una diagonal, por ejemplo: <strong>Grupo / Bodas</strong>.</p>
+        <label>Nombre <input id="newRepertoireInput" required maxlength="120" placeholder="Grupo / Evento" /></label>
+        <footer class="dialog-actions">
+          <button id="cancelRepertoireButton" class="quiet" type="button">Cancelar</button>
+          <button class="primary" type="submit">Crear</button>
+        </footer>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

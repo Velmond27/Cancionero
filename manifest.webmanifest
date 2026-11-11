@@ -1,0 +1,20 @@
+{
+  "name": "Mi Cancionero Offline",
+  "short_name": "Cancionero",
+  "description": "Letras, acordes, repertorios y autoscroll para músicos.",
+  "lang": "es-MX",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1311",
+  "theme_color": "#171c19",
+  "icons": [
+    {
+      "src": "./icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
