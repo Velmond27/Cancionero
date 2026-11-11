@@ -101,8 +101,11 @@
           <label>Título <input id="titleInput" name="title" required maxlength="120" placeholder="Nombre de la canción" /></label>
           <label>Artista <input id="artistInput" name="artist" maxlength="120" placeholder="Artista o compositor" /></label>
           <label>Repertorio / carpeta
-            <input id="repertoireInput" name="repertoire" list="repertoireOptions" maxlength="120" placeholder="Ej. Grupo / Serenata" />
-            <datalist id="repertoireOptions"></datalist>
+            <select id="repertoireSelect" name="repertoireSelect">
+              <option value="">Sin repertorio</option>
+              <option value="__new__">＋ Escribir uno nuevo…</option>
+            </select>
+            <input id="repertoireInput" name="repertoire" maxlength="120" placeholder="Ej. Grupo / Serenata" hidden />
           </label>
           <label>Duración
             <div class="duration-inputs">
@@ -146,6 +149,7 @@ Primera línea de la canción"></textarea>
             <h2 id="performanceTitle"></h2>
             <p id="performanceArtist"></p>
           </div>
+          <button id="deleteFromPlayerButton" class="icon-button light" type="button" aria-label="Eliminar canción" title="Eliminar canción">⌫</button>
           <button id="favoriteButton" class="icon-button light" type="button" aria-label="Marcar favorita">☆</button>
         </header>
 

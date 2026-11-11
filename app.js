@@ -99,9 +99,15 @@ function renderRepertoires() {
   $("#repertoireList").innerHTML = repertoires.map((name) => {
     const count = state.songs.filter((song) => song.repertoire === name).length;
     const indent = name.includes("/") ? " folder-indent" : "";
-    return `<button class="nav-item${state.filter === name ? " active" : ""}${indent}" data-folder="${escapeHtml(name)}" type="button"><span>${escapeHtml(name)}</span><b>${count}</b></button>`;
+    return `<div class="repertoire-row">
+      <button class="nav-item${state.filter === name ? " active" : ""}${indent}" data-folder="${escapeHtml(name)}" type="button"><span>${escapeHtml(name)}</span><b>${count}</b></button>
+      <button class="delete-repertoire" data-delete-repertoire="${escapeHtml(name)}" type="button" aria-label="Eliminar repertorio ${escapeHtml(name)}" title="Eliminar repertorio">×</button>
+    </div>`;
   }).join("");
-  $("#repertoireOptions").innerHTML = repertoires.map((name) => `<option value="${escapeHtml(name)}"></option>`).join("");
+  const select = $("#repertoireSelect");
+  const selected = select.value;
+  select.innerHTML = `<option value="">Sin repertorio</option>${repertoires.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("")}<option value="__new__">＋ Escribir uno nuevo…</option>`;
+  if ([...select.options].some((option) => option.value === selected)) select.value = selected;
 }
 
 function render() {
@@ -141,7 +147,11 @@ function openEditor(song = null) {
   $("#editorTitle").textContent = song ? "Editar canción" : "Nueva canción";
   $("#titleInput").value = song?.title || "";
   $("#artistInput").value = song?.artist || "";
-  $("#repertoireInput").value = song?.repertoire || (state.filter !== "all" && state.filter !== "favorites" ? state.filter : "");
+  const selectedRepertoire = song?.repertoire || (state.filter !== "all" && state.filter !== "favorites" ? state.filter : "");
+  renderRepertoires();
+  $("#repertoireSelect").value = selectedRepertoire;
+  $("#repertoireInput").value = "";
+  $("#repertoireInput").hidden = true;
   $("#minutesInput").value = Math.floor((song?.durationSeconds ?? 180) / 60);
   $("#secondsInput").value = (song?.durationSeconds ?? 180) % 60;
   $("#lyricsInput").value = song?.lyrics || "";
@@ -160,11 +170,13 @@ async function saveEditor(event) {
   const existing = state.songs.find((song) => song.id === state.editingId);
   const title = $("#titleInput").value.trim();
   if (!title) return $("#titleInput").focus();
+  const selectedRepertoire = $("#repertoireSelect").value;
+  const repertoire = selectedRepertoire === "__new__" ? $("#repertoireInput").value.trim() : selectedRepertoire;
   const song = {
     id: existing?.id || crypto.randomUUID(),
     title,
     artist: $("#artistInput").value.trim(),
-    repertoire: $("#repertoireInput").value.trim(),
+    repertoire,
     durationSeconds: Math.max(1, (Number($("#minutesInput").value) || 0) * 60 + (Number($("#secondsInput").value) || 0)),
     lyrics: $("#lyricsInput").value.replace(/\r\n/g, "\n"),
     favorite: existing?.favorite || false,
@@ -172,6 +184,10 @@ async function saveEditor(event) {
     updatedAt: new Date().toISOString(),
   };
   await putSong(song);
+  if (repertoire && !state.customRepertoires.includes(repertoire)) {
+    state.customRepertoires.push(repertoire);
+    await putSetting("repertoires", state.customRepertoires);
+  }
   state.songs = state.songs.filter((item) => item.id !== song.id).concat(song);
   closeEditor();
   render();
@@ -303,6 +319,11 @@ function bindEvents() {
   $("#closeEditorButton").addEventListener("click", closeEditor);
   $("#cancelEditorButton").addEventListener("click", closeEditor);
   $("#songForm").addEventListener("submit", saveEditor);
+  $("#repertoireSelect").addEventListener("change", (event) => {
+    const creating = event.target.value === "__new__";
+    $("#repertoireInput").hidden = !creating;
+    if (creating) setTimeout(() => $("#repertoireInput").focus(), 0);
+  });
 
   $("#lyricsInput").addEventListener("keydown", (event) => {
     if (event.key !== "Tab") return;
@@ -327,6 +348,27 @@ function bindEvents() {
   });
 
   document.addEventListener("click", (event) => {
+    const deleteRepertoireButton = event.target.closest("[data-delete-repertoire]");
+    if (deleteRepertoireButton) {
+      const name = deleteRepertoireButton.dataset.deleteRepertoire;
+      const affected = state.songs.filter((song) => song.repertoire === name);
+      const explanation = affected.length
+        ? `Las ${affected.length} canciones se conservarán en “Sin repertorio”.`
+        : "Este repertorio está vacío.";
+      if (!confirm(`¿Eliminar el repertorio “${name}”?\n\n${explanation}`)) return;
+      Promise.all(affected.map((song) => {
+        song.repertoire = "";
+        song.updatedAt = new Date().toISOString();
+        return putSong(song);
+      })).then(async () => {
+        state.customRepertoires = state.customRepertoires.filter((item) => item !== name);
+        await putSetting("repertoires", state.customRepertoires);
+        if (state.filter === name) state.filter = "all";
+        render();
+        toast("Repertorio eliminado; las canciones se conservaron");
+      });
+      return;
+    }
     const nav = event.target.closest(".nav-item[data-folder]");
     if (nav) {
       state.filter = nav.dataset.folder;
@@ -388,6 +430,17 @@ function bindEvents() {
     await putSong(song);
     $("#favoriteButton").textContent = song.favorite ? "★" : "☆";
     render();
+  });
+  $("#deleteFromPlayerButton").addEventListener("click", async () => {
+    const song = currentSong();
+    if (!song || !confirm(`¿Eliminar “${song.title}”? Esta acción no se puede deshacer.`)) return;
+    stopAutoscroll(false);
+    await removeSong(song.id);
+    state.songs = state.songs.filter((item) => item.id !== song.id);
+    state.playingId = null;
+    $("#performanceDialog").close();
+    render();
+    toast("Canción eliminada");
   });
   $("#editFromPlayerButton").addEventListener("click", () => {
     const song = currentSong();
