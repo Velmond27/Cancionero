@@ -172,9 +172,9 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
   .sidebar.open { transform: translateX(0); }
   .sidebar-close { display: grid; }
   .menu-button { display: grid; }
-  .topbar { padding: 12px 14px; }
-  .web-search-button { font-size: 0; width: 42px; height: 42px; padding: 0; }
-  .web-search-button::after { content: "⌕"; font-size: 21px; }
+  .topbar { padding: 12px 14px; flex-wrap: wrap; }
+  .search-wrap { min-width: 0; }
+  .web-search-button { order: 5; width: 100%; padding-block: 9px; }
   .install-button { display: none; }
   .library { padding: 30px 16px 70px; }
   .section-head { align-items: start; }

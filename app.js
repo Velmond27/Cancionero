@@ -451,7 +451,7 @@ function bindEvents() {
 
   $("#webSearchButton").addEventListener("click", () => {
     if (!navigator.onLine) return toast("Conéctate a internet para buscar en la web");
-    const query = $("#searchInput").value.trim() || prompt("¿Qué canción quieres buscar?");
+    const query = $("#searchInput").value.trim() || prompt("¿Qué letra o canción quieres buscar en Google?");
     if (!query) return;
     window.open(`https://www.google.com/search?q=${encodeURIComponent(`${query} letra acordes`)}`, "_blank", "noopener,noreferrer");
   });
