@@ -184,6 +184,22 @@ Primera línea de la canción"></textarea>
       </form>
     </dialog>
 
+    <dialog id="installDialog" class="install-dialog">
+      <div class="install-mark" aria-hidden="true">♪</div>
+      <p class="eyebrow">ACCESO RÁPIDO Y OFFLINE</p>
+      <h2>Agregar a inicio</h2>
+      <p id="installMessage">Instala Mi Cancionero para abrirlo como una app y usar tus canciones sin conexión.</p>
+      <ol id="iosInstallSteps" class="install-steps" hidden>
+        <li>Toca el botón <strong>Compartir</strong> <span aria-hidden="true">□↑</span> de Safari.</li>
+        <li>Selecciona <strong>Agregar a inicio</strong>.</li>
+        <li>Confirma con <strong>Agregar</strong>.</li>
+      </ol>
+      <div class="install-actions">
+        <button id="dismissInstallButton" class="quiet" type="button">Ahora no</button>
+        <button id="confirmInstallButton" class="primary" type="button">Agregar a inicio</button>
+      </div>
+    </dialog>
+
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="./app.js" type="module"></script>
   </body>

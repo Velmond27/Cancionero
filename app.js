@@ -313,6 +313,62 @@ function setTheme(theme) {
   button.title = nextIsLight ? "Modo claro" : "Modo oscuro";
 }
 
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isAppleMobile() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function prepareInstallDialog(showAutomatically = false) {
+  if (isStandalone()) {
+    $("#installButton").hidden = true;
+    if ($("#installDialog").open) $("#installDialog").close();
+    return;
+  }
+
+  $("#installButton").hidden = false;
+  const apple = isAppleMobile();
+  $("#iosInstallSteps").hidden = !apple;
+  $("#installMessage").textContent = apple
+    ? "Instala Mi Cancionero desde Safari para abrirlo como una app y conservar el acceso offline."
+    : "Instala Mi Cancionero para abrirlo como una app y usar tus canciones sin conexión.";
+  $("#confirmInstallButton").textContent = state.deferredInstall ? "Agregar a inicio" : (apple ? "Entendido" : "Ver cómo agregar");
+
+  if (showAutomatically && !sessionStorage.getItem("install-prompt-dismissed")) {
+    setTimeout(() => {
+      if (!isStandalone() && !$("#installDialog").open) $("#installDialog").showModal();
+    }, 700);
+  }
+}
+
+async function requestInstall() {
+  if (!state.deferredInstall && $("#confirmInstallButton").textContent === "Entendido") {
+    sessionStorage.setItem("install-prompt-dismissed", "true");
+    $("#installDialog").close();
+    return;
+  }
+
+  if (state.deferredInstall) {
+    state.deferredInstall.prompt();
+    await state.deferredInstall.userChoice;
+    state.deferredInstall = null;
+    if ($("#installDialog").open) $("#installDialog").close();
+    prepareInstallDialog(false);
+    return;
+  }
+
+  if (isAppleMobile()) {
+    $("#iosInstallSteps").hidden = false;
+    $("#confirmInstallButton").textContent = "Entendido";
+    return;
+  }
+
+  $("#installMessage").textContent = "Abre el menú de tu navegador y selecciona “Instalar aplicación” o “Agregar a pantalla de inicio”.";
+  $("#confirmInstallButton").textContent = "Entendido";
+}
+
 function bindEvents() {
   $("#newSongButton").addEventListener("click", () => openEditor());
   $("#emptyNewSongButton").addEventListener("click", () => openEditor());
@@ -454,14 +510,21 @@ function bindEvents() {
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     state.deferredInstall = event;
-    $("#installButton").hidden = false;
+    prepareInstallDialog(false);
   });
-  $("#installButton").addEventListener("click", async () => {
-    if (!state.deferredInstall) return;
-    state.deferredInstall.prompt();
-    await state.deferredInstall.userChoice;
+  $("#installButton").addEventListener("click", () => {
+    prepareInstallDialog(false);
+    $("#installDialog").showModal();
+  });
+  $("#confirmInstallButton").addEventListener("click", requestInstall);
+  $("#dismissInstallButton").addEventListener("click", () => {
+    sessionStorage.setItem("install-prompt-dismissed", "true");
+    $("#installDialog").close();
+  });
+  window.addEventListener("appinstalled", () => {
     state.deferredInstall = null;
-    $("#installButton").hidden = true;
+    prepareInstallDialog(false);
+    toast("Mi Cancionero se agregó a inicio");
   });
 }
 
@@ -470,6 +533,7 @@ async function initialize() {
   setTheme(savedTheme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
   bindEvents();
   updateConnection();
+  prepareInstallDialog(true);
   state.songs = await getAllSongs();
   state.customRepertoires = (await getSetting("repertoires"))?.value || [];
   render();

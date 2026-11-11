@@ -156,6 +156,13 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .small-dialog h2 { margin: 0 0 8px; }
 .small-dialog p { color: var(--muted); line-height: 1.5; }
 .small-dialog .dialog-actions { padding: 20px 0 0; justify-content: end; }
+.install-dialog { width: min(430px, calc(100% - 28px)); border-radius: 24px; padding: 28px; text-align: center; }
+.install-dialog .install-mark { width: 64px; height: 64px; display: grid; place-items: center; margin: 0 auto 20px; border-radius: 20px; color: var(--accent-ink); background: var(--accent); font-size: 34px; font-weight: 900; transform: rotate(-4deg); }
+.install-dialog h2 { margin: 0; font-size: 30px; letter-spacing: -.03em; }
+.install-dialog > p:not(.eyebrow) { color: var(--muted); line-height: 1.55; }
+.install-steps { margin: 20px 0; padding: 16px 16px 16px 42px; color: var(--ink); background: var(--panel-2); border-radius: 14px; text-align: left; line-height: 1.55; }
+.install-steps li + li { margin-top: 8px; }
+.install-actions { display: grid; grid-template-columns: 1fr 1.35fr; gap: 10px; margin-top: 22px; }
 .toast { pointer-events: none; opacity: 0; transform: translate(-50%, 15px); position: fixed; z-index: 100; left: 50%; bottom: 26px; padding: 12px 18px; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font-weight: 800; transition: .2s ease; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
