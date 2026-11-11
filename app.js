@@ -285,6 +285,18 @@ function updateConnection() {
   label.className = navigator.onLine ? "online" : "offline";
 }
 
+function setTheme(theme) {
+  const selected = theme === "light" ? "light" : "dark";
+  document.documentElement.dataset.theme = selected;
+  localStorage.setItem("app-theme", selected);
+  const button = $("#themeButton");
+  if (!button) return;
+  const nextIsLight = selected === "dark";
+  button.textContent = nextIsLight ? "☀" : "☾";
+  button.setAttribute("aria-label", nextIsLight ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+  button.title = nextIsLight ? "Modo claro" : "Modo oscuro";
+}
+
 function bindEvents() {
   $("#newSongButton").addEventListener("click", () => openEditor());
   $("#emptyNewSongButton").addEventListener("click", () => openEditor());
@@ -334,6 +346,10 @@ function bindEvents() {
     render();
   }));
   $("#menuButton").addEventListener("click", () => $("#sidebar").classList.toggle("open"));
+  $("#closeMenuButton").addEventListener("click", () => $("#sidebar").classList.remove("open"));
+  $("#themeButton").addEventListener("click", () => {
+    setTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+  });
 
   $("#webSearchButton").addEventListener("click", () => {
     if (!navigator.onLine) return toast("Conéctate a internet para buscar en la web");
@@ -397,6 +413,8 @@ function bindEvents() {
 }
 
 async function initialize() {
+  const savedTheme = localStorage.getItem("app-theme");
+  setTheme(savedTheme || (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
   bindEvents();
   updateConnection();
   state.songs = await getAllSongs();
