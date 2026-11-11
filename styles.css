@@ -5,8 +5,8 @@
   --panel: #171c19;
   --panel-2: #202622;
   --line: #343b36;
-  --accent: #d9ff63;
-  --accent-ink: #182000;
+  --accent: #fa2d48;
+  --accent-ink: #ffffff;
   --danger: #ff7d73;
   --paper: #f1eee4;
   --paper-ink: #20251f;
@@ -27,7 +27,7 @@
   --panel: #ffffff;
   --panel-2: #e8ede8;
   --line: #d2d9d3;
-  --accent: #789900;
+  --accent: #e91e3a;
   --accent-ink: #ffffff;
   --danger: #d94a42;
   --page: #f3f5f1;
@@ -130,7 +130,6 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .duration-inputs { display: flex; align-items: center; gap: 6px; }
 .duration-inputs input { min-width: 0; text-align: center; }
 .editor-toolbar { padding: 10px 26px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; font-weight: 750; }
-.chip { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 5px 9px; }
 #lyricsInput { flex: 1; resize: none; margin: 0 26px; padding: 18px; font: 15px/1.65 "Cascadia Mono", Consolas, "Courier New", monospace; white-space: pre; tab-size: 4; overflow: auto; }
 .editor-note { color: var(--muted); font-size: 11px; margin: 8px 26px 0; }
 .dialog-actions { display: flex; align-items: center; gap: 10px; padding: 16px 26px 22px; }
@@ -142,7 +141,7 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 .performance-header h2 { margin: 0; font-size: 19px; }
 .performance-header p { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
 .lyrics-scroller { overflow: auto; padding: 11vh max(6vw, 22px) 0; scroll-behavior: auto; }
-.lyrics-scroller pre { width: min(900px, 100%); margin: 0 auto; white-space: pre; font: clamp(16px, 2.5vw, 25px)/1.75 "Cascadia Mono", Consolas, "Courier New", monospace; color: var(--ink); overflow: visible; }
+.lyrics-scroller pre { width: min(980px, 100%); margin: 0 auto; white-space: pre-wrap; overflow-wrap: break-word; font: 750 clamp(21px, 3.4vw, 34px)/1.62 "SFMono-Regular", "Cascadia Mono", Consolas, "Courier New", monospace; letter-spacing: .005em; color: var(--ink); overflow: visible; }
 .end-space { height: 55vh; }
 .countdown { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; font-size: min(38vw, 240px); font-weight: 900; color: var(--accent); background: rgba(8,10,9,.82); }
 .player-controls { position: relative; z-index: 3; display: grid; grid-template-columns: 44px 44px 64px minmax(150px, 320px) 54px; justify-content: center; align-items: center; gap: 14px; padding: 13px 20px max(13px, env(safe-area-inset-bottom)); background: var(--performance-controls); border-top: 1px solid var(--line); }
@@ -168,8 +167,8 @@ input:focus, textarea:focus, select:focus { border-color: var(--accent); }
 
 @media (max-width: 800px) {
   .app-shell { grid-template-columns: 1fr; }
-  .sidebar { position: fixed; inset: 0 auto 0 0; width: min(86vw, 310px); transform: translateX(-102%); transition: transform .22s ease; box-shadow: 20px 0 60px rgba(0,0,0,.5); }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar { position: fixed; inset: 0 auto 0 0; width: min(86vw, 310px); transform: translateX(-102%); transition: transform .22s ease, box-shadow .22s ease; box-shadow: none; }
+  .sidebar.open { transform: translateX(0); box-shadow: 20px 0 60px rgba(0,0,0,.34); }
   .sidebar-close { display: grid; }
   .menu-button { display: grid; }
   .topbar { padding: 12px 14px; flex-wrap: wrap; }

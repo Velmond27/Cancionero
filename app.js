@@ -387,12 +387,6 @@ function bindEvents() {
     const input = event.currentTarget;
     input.setRangeText("    ", input.selectionStart, input.selectionEnd, "end");
   });
-  $$('[data-insert]').forEach((button) => button.addEventListener("click", () => {
-    const input = $("#lyricsInput");
-    input.setRangeText(button.dataset.insert, input.selectionStart, input.selectionEnd, "end");
-    input.focus();
-  }));
-
   $("#deleteSongButton").addEventListener("click", async () => {
     const song = state.songs.find((item) => item.id === state.editingId);
     if (!song || !confirm(`¿Eliminar “${song.title}”? Esta acción no se puede deshacer.`)) return;
